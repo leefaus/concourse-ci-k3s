@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    service: concourse-web
+  name: concourse-web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      service: concourse-web
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        service: concourse-web
+    spec:
+      containers:
+      - args:
+        - web
+        env:
+        - name: CONCOURSE_ADD_LOCAL_USER
+          value: concourse:P@ssw0rd
+        - name: CONCOURSE_MAIN_TEAM_LOCAL_USER
+          value: concourse
+        - name: CONCOURSE_EXTERNAL_URL
+          value: http://10.43.132.114
+        - name: CONCOURSE_POSTGRES_DATABASE
+          value: concourse
+        - name: CONCOURSE_POSTGRES_HOST
+          value: concourse-db
+        - name: CONCOURSE_POSTGRES_PASSWORD
+          value: ops
+        - name: CONCOURSE_POSTGRES_USER
+          value: dev
+        image: concourse/concourse
+        name: concourse-web
+        ports:
+        - containerPort: 8080
+        resources: {}
+        # restartPolicy: Always
+        volumeMounts:
+        - mountPath: /concourse-keys
+          name: cache-volume
+      volumes:
+        - name: cache-volume
+          secret:
+            secretName: concourse-web-keys
